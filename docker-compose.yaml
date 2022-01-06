@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+
+    homeiotdb:
+        build: ./DOCKER/DB
+#            context: .
+#            dockerfile: ./Dockerfile
+#            args:
+#                - DB_LANG=ja_JP
+        container_name: "homeiotdb"
+        ports:
+            - "5433:5432"
+        environment:
+            POSTGRES_DB: homeiotdb
+            POSTGRES_USER: $DB_USER
+            POSTGRES_PASSWORD: $DB_PWD
+        volumes:
+            - homeiot_data:/var/lib/postgresql/data
+            - ./DOCKER/DB/initdb.d:/docker-entrypoint-initdb.d
+
+    homeiotapp:
+        build:
+            context: .
+            dockerfile: ./DOCKER/RAILS/Dockerfile
+        command: bundle exec unicorn -p 3000 -c /homeiot/config/unicorn.rb -E production
+        tty: true
+        stdin_open: true
+        depends_on:
+            - homeiotdb
+        ports:
+            - "3000:3000"
+        environment:
+            DATABASE_URL: $DB_URL
+            SECRET_KEY_BASE: $SECRET_KEY
+        volumes:
+            - .:/homeiot:cached
+            - tmp_data:/homeiot/tmp/sockets
+            - public_data:/homeiot/public
+
+    homeiotweb:
+        build:
+            context: ./DOCKER/WEB/
+            dockerfile: ./Dockerfile
+        ports:
+            - 8888:80
+        restart: always
+        volumes:
+            - tmp_data:/homeiot/tmp/sockets
+            - public_data:/homeiot/public
+        depends_on:
+            - homeiotapp
+
+volumes:
+    homeiot_data:
+        driver: local
+    public_data:
+        driver: local
+    tmp_data:
+        driver: local

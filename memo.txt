@@ -1,0 +1,45 @@
+1. PostgreSQL
+
+
+2. Rails with unicorn: COMPILATION
+
+  $ docker-compose run homeiotapp yarn install
+
+  $ vi babel.config.js
+    => 下記を追記。(この作業いらない)
+      [
+        '@babel/plugin-proposal-private-property-in-object',
+        {
+          loose: true
+        }
+      ],
+      [
+        '@babel/plugin-proposal-private-methods',
+        {
+          loose: true
+        }
+      ]
+
+  $ docker-compose run homeiotapp bundle exec rails webpacker:install:vue RAILS_ENV=production
+  $ docker-compose run homeiotapp bundle exec rails webpacker:compile RAILS_ENV=production
+
+
+3. Rails with unicorn: DB
+
+  $ docker-compose build homeiotapp
+
+  `raise no_secret_key': Devise.secret_key was not set. Please...
+    => config/initializers/devise.rb にエラーメッセージのキーを記述する。
+
+  $ docker-compose run homeiotapp bundle exec rake secret
+    => 表示されたキー値を、docker-composeのenvironmentのSECRET_KEY_BASEに設定する。
+
+  $ docker-compose run homeiotapp bundle exec rake db:migrate
+
+  $ docker-compose run homeiotapp bundle exec rake db:seed
+    => db/seeds.rbの、IpRestrictionsのIPアドレス設定値を、ルータのWAN IPアドレスに修正してから上記を実行する。
+
+
+4. Running
+
+  $ docker-compose up -d

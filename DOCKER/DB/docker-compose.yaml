@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+
+    homeiotdb:
+        build: .
+#            context: .
+#            dockerfile: ./Dockerfile
+#            args:
+#                - DB_LANG=ja_JP
+        container_name: "homeiotdb"
+        ports:
+            - "5433:5432"
+        environment:
+            POSTGRES_DB: homeiotdb
+            POSTGRES_USER: USER
+            POSTGRES_PASSWORD: PWD
+        volumes:
+            - homeiot_data:/var/lib/postgresql/data
+            - ./initdb.d:/docker-entrypoint-initdb.d
+
+volumes:
+    homeiot_data:
+        driver: local

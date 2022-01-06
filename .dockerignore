@@ -1,0 +1,18 @@
+## Commons
+.bundle
+vendor/bundle
+.browserslistrc
+.git
+
+## Rails
+Gemfile.lock
+public/assets/*
+
+## log
+log
+tmp
+
+## docker
+.dockerignore
+DOCKER
+DB
